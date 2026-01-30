@@ -11,6 +11,7 @@ class MoviesListViewController: UITableViewController {
 
     @IBOutlet weak var searchBar: UISearchBar!
     fileprivate let moviesService = MoviesService()
+    fileprivate var searchData: SearchData?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -20,10 +21,13 @@ class MoviesListViewController: UITableViewController {
 
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem
-        moviesService.getList { result in
+        moviesService.getList { [self] result in
             switch result {
                 case .success(let data):
-                    print(data)
+                    searchData = data
+                    DispatchQueue.main.async {
+                        self.tableView.reloadData()
+                    }
                 case .failure(let error):
                     print(error.localizedDescription)
             }
@@ -33,24 +37,18 @@ class MoviesListViewController: UITableViewController {
     // MARK: - Table view data source
 
     override func numberOfSections(in tableView: UITableView) -> Int {
-        // #warning Incomplete implementation, return the number of sections
-        return 0
+        return 1
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of rows
-        return 0
+        return searchData?.search.count ?? 0
     }
 
-    /*
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "reuseIdentifier", for: indexPath)
-
-        // Configure the cell...
+        let cell = tableView.dequeueReusableCell(withIdentifier: "movieCell", for: indexPath)
 
         return cell
     }
-    */
 
     /*
     // Override to support conditional editing of the table view.
