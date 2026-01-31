@@ -11,6 +11,7 @@ class MovieDetailViewController: UIViewController {
     var id: String!
     fileprivate let moviesService = MoviesService()
     fileprivate var genres = [String]()
+    fileprivate var ratings = [RatingData]()
     
     @IBOutlet weak var posterImage: UIImageView!
     @IBOutlet weak var titleLabel: UILabel!
@@ -86,6 +87,7 @@ class MovieDetailViewController: UIViewController {
             self?.plotDetailLabel.text = data.plot
             let dataGenres = data.genre.split(separator: ",").compactMap({ $0.trimmingCharacters(in: .whitespacesAndNewlines) })
             self?.genres = dataGenres
+            self?.ratings = data.ratings
             self?.genresCollectionView.reloadData()
         }
     }
@@ -104,20 +106,57 @@ class MovieDetailViewController: UIViewController {
 }
 
 extension MovieDetailViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+    func numberOfSections(in collectionView: UICollectionView) -> Int {
+        return 2
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath ) -> UICollectionReusableView {
+        guard kind == UICollectionView.elementKindSectionHeader else {
+            return UICollectionReusableView()
+        }
+        guard let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "sectionHeader", for: indexPath) as? CollectionHeaderView else {
+            return UICollectionReusableView()
+        }
+        switch indexPath.section {
+            case 0:
+                header.headerTitleLabel.text = "Genres"
+            case 1:
+                header.headerTitleLabel.text = "Ratings"
+            default:
+                break
+        }
+        return header
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int ) -> CGSize {
+        return CGSize(width: collectionView.bounds.width, height: 48)
+    }
+    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: 100, height: 160)
+        return CGSize(width: 72, height: 96)
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return genres.count
+        return section == 0 ? genres.count : ratings.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "genreCell", for: indexPath) as? GenreViewCell else {
-            return UICollectionViewCell()
+        switch indexPath.section {
+            case 0:
+                if let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "genreCell", for: indexPath) as? GenreViewCell {
+                    let genre = genres[indexPath.item]
+                    cell.genreTitleLabel.text = genre.uppercased()
+                    return cell
+                }
+            case 1:
+                if let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ratingCell", for: indexPath) as? RatingViewCell {
+                    let rating = ratings[indexPath.item]
+                    cell.setProgress(rating.value, source: rating.source)
+                    return cell
+                }
+            default:
+                break
         }
-        let genre = genres[indexPath.item]
-        cell.genreTitleLabel.text = genre.uppercased()
-        return cell
+        return UICollectionViewCell()
     }
 }
