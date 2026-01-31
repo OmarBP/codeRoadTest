@@ -11,6 +11,7 @@ class MoviesListViewController: UITableViewController {
 
     @IBOutlet weak var searchBar: UISearchBar!
     fileprivate let moviesService = MoviesService()
+    fileprivate var searchData: SearchData?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -20,37 +21,61 @@ class MoviesListViewController: UITableViewController {
 
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem
-        moviesService.getList { result in
-            switch result {
-                case .success(let data):
-                    print(data)
-                case .failure(let error):
-                    print(error.localizedDescription)
-            }
-        }
+        searchBar.placeholder = "Please enter movie title"
+        searchBar.delegate = self
+    }
+    
+    fileprivate func showDetailFor(movieID: String) {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        guard let movieDetailVC = storyboard.instantiateViewController(withIdentifier: "movieDetail") as? MovieDetailViewController else { return }
+        movieDetailVC.id = movieID
+        let navigation = UINavigationController(rootViewController: movieDetailVC)
+        navigation.modalPresentationStyle = .overFullScreen
+        navigation.navigationBar.isHidden = true
+        present(navigation, animated: true, completion: nil)
     }
 
     // MARK: - Table view data source
 
     override func numberOfSections(in tableView: UITableView) -> Int {
-        // #warning Incomplete implementation, return the number of sections
-        return 0
+        return 1
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of rows
-        return 0
+        return searchData?.search.count ?? 0
     }
 
-    /*
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "reuseIdentifier", for: indexPath)
-
-        // Configure the cell...
-
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "movieCell", for: indexPath) as? MovieViewCell else {
+            return UITableViewCell()
+        }
+        guard let data = searchData?.search[indexPath.row] else {
+            return UITableViewCell()
+        }
+        cell.titleLabel.text = data.title
+        cell.yearLabel.text = data.year
+        moviesService.getImage(imageURL: data.poster) { result in
+            switch result {
+                case .success(let data):
+                    DispatchQueue.main.async {
+                        cell.poster.image = UIImage(data: data)
+                    }
+                case .failure(let error):
+                    print(error.localizedDescription)
+            }
+        }
         return cell
     }
-    */
+    
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 60
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard let data = searchData?.search[indexPath.row] else { return }
+        let movieID = data.id
+        showDetailFor(movieID: movieID)
+    }
 
     /*
     // Override to support conditional editing of the table view.
@@ -97,4 +122,22 @@ class MoviesListViewController: UITableViewController {
     }
     */
 
+}
+
+extension MoviesListViewController: UISearchBarDelegate {
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.endEditing(true)
+        guard let title = searchBar.text else { return }
+        moviesService.getList(title: title) { [weak self] result in
+            switch result {
+                case .success(let data):
+                    self?.searchData = data
+                    DispatchQueue.main.async {
+                        self?.tableView.reloadData()
+                    }
+                case .failure(let error):
+                    print(error.localizedDescription)
+            }
+        }
+    }
 }
