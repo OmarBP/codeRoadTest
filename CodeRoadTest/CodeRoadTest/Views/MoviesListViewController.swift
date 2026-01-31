@@ -52,7 +52,8 @@ class MoviesListViewController: UITableViewController {
         guard let data = searchData?.search[indexPath.row] else {
             return UITableViewCell()
         }
-        cell.title.text = data.title
+        cell.titleLabel.text = data.title
+        cell.yearLabel.text = data.year
         moviesService.getImage(imageURL: data.poster) { result in
             switch result {
                 case .success(let data):

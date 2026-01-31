@@ -26,10 +26,11 @@ struct MovieDetailData: Codable {
     let imdbVotes: String
     let imdbID: String
     let type: String
-    let dvd: String
-    let boxOffice: String
-    let production: String
-    let website: String
+    let dvd: String?
+    let boxOffice: String?
+    let production: String?
+    let website: String?
+    let totalSeasons: String?
     let response: String
     
     enum CodingKeys: String, CodingKey {
@@ -55,6 +56,6 @@ struct MovieDetailData: Codable {
         case production = "Production"
         case website = "Website"
         case response = "Response"
-        case imdbRating, imdbVotes, imdbID
+        case imdbRating, imdbVotes, imdbID, totalSeasons
     }
 }

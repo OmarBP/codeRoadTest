@@ -70,6 +70,7 @@ class MoviesService: APIService {
             switch requestResult {
                 case .success(let data):
                     do {
+                        print(String(data: data, encoding: .utf8)!)
                         let detailData = try JSONDecoder().decode(MovieDetailData.self, from: data)
                         result(.success(detailData))
                     } catch {

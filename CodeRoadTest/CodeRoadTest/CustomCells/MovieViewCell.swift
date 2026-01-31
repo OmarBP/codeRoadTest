@@ -10,11 +10,11 @@ import UIKit
 class MovieViewCell: UITableViewCell {
 
     @IBOutlet weak var poster: UIImageView!
-    @IBOutlet weak var title: UILabel!
+    @IBOutlet weak var titleLabel: UILabel!
+    @IBOutlet weak var yearLabel: UILabel!
     
     override func awakeFromNib() {
         super.awakeFromNib()
-        // Initialization code
         poster.layer.cornerRadius = 8
         poster.clipsToBounds = true
     }
