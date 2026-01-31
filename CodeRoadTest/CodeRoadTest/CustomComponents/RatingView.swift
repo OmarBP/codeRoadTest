@@ -75,7 +75,6 @@ class RatingView: UIView {
         let startAngle = clockwise ? Double(-225).degToRad() : Double(45).degToRad()
         let endAngle = clockwise ? Double(45).degToRad() : Double(-225).degToRad()
         let radius = frame.width / 2.5
-        let arcCenter = progressLabel.center
         let path = UIBezierPath(arcCenter: center, radius: radius, startAngle: startAngle, endAngle: endAngle, clockwise: clockwise)
         setTrackLayer(path)
         layer.addSublayer(trackLayer)
@@ -116,13 +115,12 @@ class RatingView: UIView {
     }
     
     func setProgress(_ progress: Double) {
-        print("progress is \(progress)")
         let animation = CABasicAnimation(keyPath: "strokeEnd")
         animation.fillMode = progress < currentProgress ? .backwards : .forwards
         let progressToSet = min(max(0, progress), 1)
         animation.fromValue = currentProgress
         animation.toValue = progressToSet
-        animation.duration = CFTimeInterval(progress)
+        animation.duration = CFTimeInterval(progress * 4)
         animation.isRemovedOnCompletion = false
         shapeLayer.strokeEnd = progressToSet
         shapeLayer.add(animation, forKey: "progress")

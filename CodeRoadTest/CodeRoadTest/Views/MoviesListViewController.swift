@@ -34,6 +34,28 @@ class MoviesListViewController: UITableViewController {
         navigation.navigationBar.isHidden = true
         present(navigation, animated: true, completion: nil)
     }
+    
+    fileprivate func refreshData(_ data: SearchData) {
+        DispatchQueue.main.async { [weak self] in
+            self?.tableView.beginUpdates()
+            if !(self?.searchData?.search.isEmpty ?? false) {
+                var indicesToRemove = [IndexPath]()
+                self?.searchData?.search.indices.forEach { i in
+                    let indexToRemove = IndexPath(row: i, section: 0)
+                    indicesToRemove.append(indexToRemove)
+                }
+                self?.tableView.deleteRows(at: indicesToRemove, with: .fade)
+            }
+            self?.searchData = data
+            var indicesToInsert = [IndexPath]()
+            self?.searchData?.search.indices.forEach { i in
+                let indexToInsert = IndexPath(row: i, section: 0)
+                indicesToInsert.append(indexToInsert)
+            }
+            self?.tableView.insertRows(at: indicesToInsert, with: .fade)
+            self?.tableView.endUpdates()
+        }
+    }
 
     // MARK: - Table view data source
 
@@ -76,52 +98,6 @@ class MoviesListViewController: UITableViewController {
         let movieID = data.id
         showDetailFor(movieID: movieID)
     }
-
-    /*
-    // Override to support conditional editing of the table view.
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the specified item to be editable.
-        return true
-    }
-    */
-
-    /*
-    // Override to support editing the table view.
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            // Delete the row from the data source
-            tableView.deleteRows(at: [indexPath], with: .fade)
-        } else if editingStyle == .insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        }    
-    }
-    */
-
-    /*
-    // Override to support rearranging the table view.
-    override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
-
-    }
-    */
-
-    /*
-    // Override to support conditional rearranging of the table view.
-    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the item to be re-orderable.
-        return true
-    }
-    */
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
 }
 
 extension MoviesListViewController: UISearchBarDelegate {
@@ -131,10 +107,7 @@ extension MoviesListViewController: UISearchBarDelegate {
         moviesService.getList(title: title) { [weak self] result in
             switch result {
                 case .success(let data):
-                    self?.searchData = data
-                    DispatchQueue.main.async {
-                        self?.tableView.reloadData()
-                    }
+                    self?.refreshData(data)
                 case .failure(let error):
                     print(error.localizedDescription)
             }
