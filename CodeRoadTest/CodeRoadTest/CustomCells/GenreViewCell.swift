@@ -20,6 +20,7 @@ class GenreViewCell: UICollectionViewCell {
         layer.cornerRadius = 8
         backgroundColor = .white
         genreTitleLabel.textColor = .darkGray
+        
         contentView.translatesAutoresizingMaskIntoConstraints = false
         let leftAnchor = contentView.leftAnchor.constraint(equalTo: leftAnchor)
         let rightAnchor = contentView.rightAnchor.constraint(equalTo: rightAnchor)

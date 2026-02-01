@@ -7,22 +7,32 @@
 
 import UIKit
 
-class MoviesListViewController: UITableViewController {
-
-    @IBOutlet weak var searchBar: UISearchBar!
+class MoviesListViewController: UITableViewController, NetworkActivityView {
     fileprivate let moviesService = MoviesService()
     fileprivate var searchData: SearchData?
+    fileprivate var welcomeLabel = UILabel()
+    internal var activityIndicator: UIActivityIndicatorView!
+
+    @IBOutlet weak var searchBar: UISearchBar!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem
+        navigationItem.title = "OMBD"
+        setUpWelcomeMessage()
+        setUpActivityIndicator(in: view)
+        activityIndicator.alpha = 0
         searchBar.placeholder = "Please enter movie title"
         searchBar.delegate = self
+    }
+    
+    fileprivate func setUpWelcomeMessage() {
+        welcomeLabel.center = view.center
+        welcomeLabel.text = "Welcome to the OMDB App, here you can find all the data about your favorite movies"
+        welcomeLabel.font = UIFont.systemFont(ofSize: 24)
+        welcomeLabel.textAlignment = .center
+        welcomeLabel.numberOfLines = 0
+        welcomeLabel.frame = CGRect(x: 0, y: 0, width: tableView.frame.width, height: view.bounds.height * 0.7)
+        tableView.tableFooterView = welcomeLabel
     }
     
     fileprivate func showDetailFor(movieID: String) {
@@ -54,6 +64,7 @@ class MoviesListViewController: UITableViewController {
             }
             self?.tableView.insertRows(at: indicesToInsert, with: .fade)
             self?.tableView.endUpdates()
+            self?.activityIndicator.alpha = 0
         }
     }
 
@@ -81,8 +92,14 @@ class MoviesListViewController: UITableViewController {
                 switch result {
                     case .success(let data):
                         cell.poster.image = UIImage(data: data)
+                        UIView.animate(withDuration: 0.5) {
+                            cell.poster.alpha = 1
+                        }
                     case .failure(_):
                         cell.poster.image = #imageLiteral(resourceName: "No Poster")
+                        UIView.animate(withDuration: 0.5) {
+                            cell.poster.alpha = 1
+                        }
                 }
             }
         }
@@ -103,13 +120,26 @@ class MoviesListViewController: UITableViewController {
 extension MoviesListViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         searchBar.endEditing(true)
+        tableView.tableFooterView = nil
+        activityIndicator.startAnimating()
+        UIView.animate(withDuration: 0.5) { [weak self] in
+            self?.activityIndicator.alpha = 1
+        }
         guard let title = searchBar.text else { return }
         moviesService.getList(title: title) { [weak self] result in
-            switch result {
-                case .success(let data):
-                    self?.refreshData(data)
-                case .failure(let error):
-                    print(error.localizedDescription)
+            DispatchQueue.main.async {
+                self?.activityIndicator.stopAnimating()
+                UIView.animate(withDuration: 0.5) {
+                    self?.activityIndicator.alpha = 0
+                }
+                switch result {
+                    case .success(let data):
+                        self?.refreshData(data)
+                    case .failure(let error):
+                        self?.tableView.tableFooterView = self?.welcomeLabel
+                        guard let self = self else { break }
+                        self.showErrorAlert(in: self, message: error.localizedDescription)
+                }
             }
         }
     }

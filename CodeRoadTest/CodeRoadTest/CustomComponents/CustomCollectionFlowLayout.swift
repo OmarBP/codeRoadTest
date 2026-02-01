@@ -8,6 +8,8 @@
 import UIKit
 
 class CustomCollectionFlowLayout: UICollectionViewFlowLayout {
+    var unaffectedSections = Set<Int>()
+    
     override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
         minimumLineSpacing = 8
         sectionInset = .zero
@@ -18,7 +20,7 @@ class CustomCollectionFlowLayout: UICollectionViewFlowLayout {
             guard layoutAttribute.representedElementCategory == .cell else {
                 return
             }
-            guard layoutAttribute.indexPath.section == 0 else {
+            guard !unaffectedSections.contains(layoutAttribute.indexPath.section) else {
                 return
             }
             if layoutAttribute.frame.origin.y >= maxY {

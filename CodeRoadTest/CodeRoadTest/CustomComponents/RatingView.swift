@@ -64,7 +64,7 @@ class RatingView: UIView {
     override func prepareForInterfaceBuilder() {
         super.prepareForInterfaceBuilder()
         initView()
-        setProgress(42)
+        setProgress(0.42)
     }
     
     override func layoutSubviews() {
@@ -96,6 +96,8 @@ class RatingView: UIView {
         let topAnchor = view.topAnchor.constraint(equalTo: topAnchor)
         let bottomAnchor = view.bottomAnchor.constraint(equalTo: bottomAnchor)
         NSLayoutConstraint.activate([leftAnchor, rightAnchor, topAnchor, bottomAnchor])
+        sourceLabel.textColor = .modalText
+        progressLabel.textColor = .modalText
     }
     
     fileprivate func setTrackLayer(_ path: UIBezierPath) {
@@ -119,14 +121,14 @@ class RatingView: UIView {
         guard progressToSet != currentProgress else { return }
         switch progressToSet {
             case let x where x <= 0.33:
-                progressColor = UIColor(named: "LowProgressColor") ?? .red
-                trackColor = UIColor(named: "LowTrackColor") ?? .red
+                progressColor = .lowProgress
+                trackColor = .lowTrack
             case let x where x >= 0.67:
-                progressColor = UIColor(named: "ProgressColor") ?? .green
-                trackColor = UIColor(named: "TrackColor") ?? .green
+                progressColor = .progress
+                trackColor = .track
             default:
-                progressColor = UIColor(named: "MidProgressColor") ?? .yellow
-                trackColor = UIColor(named: "MidTrackColor") ?? .yellow
+                progressColor = .midProgress
+                trackColor = .midTrack
         }
         trackLayer.strokeColor = currentTrackColor.cgColor
         shapeLayer.strokeColor = currentProgressColor.cgColor
