@@ -114,16 +114,31 @@ class RatingView: UIView {
         shapeLayer.lineWidth = 4
     }
     
-    func setProgress(_ progress: Double) {
+    func setProgress(_ newProgress: Double) {
+        let progressToSet = min(max(0, newProgress), 1)
+        guard progressToSet != currentProgress else { return }
+        switch progressToSet {
+            case let x where x <= 0.33:
+                progressColor = UIColor(named: "LowProgressColor") ?? .red
+                trackColor = UIColor(named: "LowTrackColor") ?? .red
+            case let x where x >= 0.67:
+                progressColor = UIColor(named: "ProgressColor") ?? .green
+                trackColor = UIColor(named: "TrackColor") ?? .green
+            default:
+                progressColor = UIColor(named: "MidProgressColor") ?? .yellow
+                trackColor = UIColor(named: "MidTrackColor") ?? .yellow
+        }
+        trackLayer.strokeColor = currentTrackColor.cgColor
+        shapeLayer.strokeColor = currentProgressColor.cgColor
         let animation = CABasicAnimation(keyPath: "strokeEnd")
-        animation.fillMode = progress < currentProgress ? .backwards : .forwards
-        let progressToSet = min(max(0, progress), 1)
+        animation.fillMode = progressToSet < currentProgress ? .backwards : .forwards
         animation.fromValue = currentProgress
         animation.toValue = progressToSet
         animation.duration = CFTimeInterval(progress * 4)
         animation.isRemovedOnCompletion = false
+        animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
         shapeLayer.strokeEnd = progressToSet
         shapeLayer.add(animation, forKey: "progress")
-        self.progress = progress
+        progress = progressToSet
     }
 }

@@ -31,7 +31,7 @@ class MovieDetailViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .black.withAlphaComponent(0.82)
+        view.backgroundColor = UIColor(named: "ModalBackgroundColor") ?? .black
         posterImage.layer.cornerRadius = 16
         posterImage.clipsToBounds = true
         plotLabel.text = "Plot"
@@ -57,14 +57,14 @@ class MovieDetailViewController: UIViewController {
     }
     
     fileprivate func loadPoster(_ posterURL: String) {
-        moviesService.getImage(imageURL: posterURL) { result in
-            switch result {
-                case .success(let data):
-                    DispatchQueue.main.async { [weak self] in
+        moviesService.getImage(imageURL: posterURL) { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                    case .success(let data):
                         self?.posterImage.image = UIImage(data: data)
-                    }
-                case .failure(let error):
-                    print(error.localizedDescription)
+                    case .failure(_):
+                        self?.posterImage.image = #imageLiteral(resourceName: "No Poster")
+                }
             }
         }
     }

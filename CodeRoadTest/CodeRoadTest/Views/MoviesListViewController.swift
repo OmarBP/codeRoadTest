@@ -77,13 +77,13 @@ class MoviesListViewController: UITableViewController {
         cell.titleLabel.text = data.title
         cell.yearLabel.text = data.year
         moviesService.getImage(imageURL: data.poster) { result in
-            switch result {
-                case .success(let data):
-                    DispatchQueue.main.async {
+            DispatchQueue.main.async {
+                switch result {
+                    case .success(let data):
                         cell.poster.image = UIImage(data: data)
-                    }
-                case .failure(let error):
-                    print(error.localizedDescription)
+                    case .failure(_):
+                        cell.poster.image = #imageLiteral(resourceName: "No Poster")
+                }
             }
         }
         return cell

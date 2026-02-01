@@ -28,7 +28,7 @@ class RatingViewCell: UICollectionViewCell {
             let value = match.output.0.replacingOccurrences(of: "%", with: "")
             return (Double(value) ?? 0) / 100
         }
-        if let match = progress.firstMatch(of: /(\d+)\/(\d+)/) {
+        if let match = progress.firstMatch(of: /(\d+(?:\.\d+)?)\/(\d+(?:\.\d+)?)/) {
             let fraction = match.output.0.split(separator: "/")
             guard let divisor = fraction.first, let dividend = fraction.last else {
                 return 0
