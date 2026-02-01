@@ -7,6 +7,9 @@
 
 import UIKit
 
+/**
+ Custom collecion view cell that auto adapts its size to its content
+ */
 class GenreViewCell: UICollectionViewCell {
     @IBOutlet weak var genreTitleLabel: UILabel!
     @IBOutlet weak var genreTitleLabelWidthConstraint: NSLayoutConstraint! {

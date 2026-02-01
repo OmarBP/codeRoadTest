@@ -7,6 +7,9 @@
 
 import UIKit
 
+/**
+ Custom flow layout for a collection view that allows cells to auto adapt the layout to the cell size, and keeping desired sections woth the default flow layout
+ */
 class CustomCollectionFlowLayout: UICollectionViewFlowLayout {
     var unaffectedSections = Set<Int>()
     
@@ -16,6 +19,7 @@ class CustomCollectionFlowLayout: UICollectionViewFlowLayout {
         let attributes = super.layoutAttributesForElements(in: rect)
         var leftMargin = sectionInset.left
         var maxY: CGFloat = -1
+        
         attributes?.forEach { layoutAttribute in
             guard layoutAttribute.representedElementCategory == .cell else {
                 return
@@ -30,6 +34,7 @@ class CustomCollectionFlowLayout: UICollectionViewFlowLayout {
             leftMargin += layoutAttribute.frame.width + 8
             maxY = max(layoutAttribute.frame.maxY, maxY)
         }
+        
         return attributes
     }
     

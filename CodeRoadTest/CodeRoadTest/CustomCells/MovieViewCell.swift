@@ -7,6 +7,9 @@
 
 import UIKit
 
+/**
+ Custom table view cell that shows some data about a movie or serie
+ */
 class MovieViewCell: UITableViewCell {
 
     @IBOutlet weak var poster: UIImageView!

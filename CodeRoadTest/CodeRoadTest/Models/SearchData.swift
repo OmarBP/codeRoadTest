@@ -5,6 +5,9 @@
 //  Created by Omar Barrera Peña on 30/01/26.
 //
 
+/**
+ Data model that contains a list of movies or series
+ */
 struct SearchData: Codable {
     let search: [MovieData]
     let totalResults: String
