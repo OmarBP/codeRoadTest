@@ -7,36 +7,6 @@
 
 import Foundation
 
-protocol APIService {
-    func getList(title: String, result: @escaping (Result<SearchData, Error>) -> Void)
-    func getImage(imageURL: String, result: @escaping (Result<Data, Error>) -> Void)
-    func getDetails(id: String, result: @escaping (Result<MovieDetailData, Error>) -> Void)
-}
-
-extension APIService {
-    func performRequest(url: String, result: @escaping(Result<Data, Error>) -> Void) {
-        guard let url = URL(string: url) else {
-            result(.failure(APIError.invalidURL))
-            return
-        }
-        let task = URLSession.shared.dataTask(with: url) { data, response, error in
-            if let error = error {
-                result(.failure(error))
-            }
-            if let response = response as? HTTPURLResponse, !(200 ..< 300).contains(response.statusCode) {
-                result(.failure(APIError.invalidRequest))
-                return
-            }
-            guard let data = data else {
-                result(.failure(APIError.noData))
-                return
-            }
-            result(.success(data))
-        }
-        task.resume()
-    }
-}
-
 class MoviesService: APIService {
     fileprivate let baseURL = "https://www.omdbapi.com/?"
     fileprivate let apiKey = "7be98d2c"
@@ -70,7 +40,6 @@ class MoviesService: APIService {
             switch requestResult {
                 case .success(let data):
                     do {
-                        print(String(data: data, encoding: .utf8)!)
                         let detailData = try JSONDecoder().decode(MovieDetailData.self, from: data)
                         result(.success(detailData))
                     } catch {

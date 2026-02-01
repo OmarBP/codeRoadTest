@@ -7,11 +7,12 @@
 
 import UIKit
 
-class MovieDetailViewController: UIViewController {
+class MovieDetailViewController: UIViewController, NetworkActivityView {
     var id: String!
     fileprivate let moviesService = MoviesService()
     fileprivate var genres = [String]()
     fileprivate var ratings = [RatingData]()
+    internal var activityIndicator: UIActivityIndicatorView!
     
     @IBOutlet weak var posterImage: UIImageView!
     @IBOutlet weak var titleLabel: UILabel!
@@ -31,20 +32,47 @@ class MovieDetailViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .black.withAlphaComponent(0.82)
-        posterImage.layer.cornerRadius = 16
-        posterImage.clipsToBounds = true
+        view.backgroundColor = UIColor(named: "ModalBackgroundColor") ?? .black
+        setUpActivityIndicator(in: view)
+        setUpLabels()
+        setUpPosterImage()
         plotLabel.text = "Plot"
         setUpCollectionView()
         moviesService.getDetails(id: id) { [weak self] result in
+            DispatchQueue.main.async {
+                self?.activityIndicator.stopAnimating()
+            }
             switch result {
                 case .success(let data):
                     self?.loadPoster(data.poster)
                     self?.loadData(data)
                 case .failure(let error):
-                    print(error.localizedDescription)
+                    guard let self = self else { break }
+                    self.showErrorAlert(in: self, message: error.localizedDescription) {
+                        self.dismiss(animated: true, completion: nil)
+                    }
             }
         }
+    }
+    
+    fileprivate func setUpPosterImage() {
+        posterImage.layer.cornerRadius = 16
+        posterImage.clipsToBounds = true
+        posterImage.layer.borderWidth = 1
+        posterImage.layer.borderColor = UIColor.white.cgColor
+        posterImage.alpha = 0
+    }
+    
+    fileprivate func setUpLabels() {
+        titleLabel.alpha = 0
+        releaseDateLabel.alpha = 0
+        directorLabel.alpha = 0
+        ratedLabel.alpha = 0
+        castLabel.alpha = 0
+        boxOfficeLabel.alpha = 0
+        writersLabel.alpha = 0
+        plotLabel.alpha = 0
+        plotDetailLabel.alpha = 0
     }
     
     fileprivate func setUpCollectionView() {
@@ -52,19 +80,27 @@ class MovieDetailViewController: UIViewController {
         genresCollectionView.dataSource = self
         genresCollectionView.backgroundColor = .clear
         let flowLayout = CustomCollectionFlowLayout()
+        flowLayout.unaffectedSections = [0]
         flowLayout.estimatedItemSize = UICollectionViewFlowLayout.automaticSize
         genresCollectionView.collectionViewLayout = flowLayout
+        genresCollectionView.alpha = 0
     }
     
     fileprivate func loadPoster(_ posterURL: String) {
-        moviesService.getImage(imageURL: posterURL) { result in
-            switch result {
-                case .success(let data):
-                    DispatchQueue.main.async { [weak self] in
+        moviesService.getImage(imageURL: posterURL) { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                    case .success(let data):
                         self?.posterImage.image = UIImage(data: data)
-                    }
-                case .failure(let error):
-                    print(error.localizedDescription)
+                        UIView.animate(withDuration: 0.5) {
+                            self?.posterImage.alpha = 1
+                        }
+                    case .failure(_):
+                        self?.posterImage.image = #imageLiteral(resourceName: "No Poster")
+                        UIView.animate(withDuration: 0.5) {
+                            self?.posterImage.alpha = 1
+                        }
+                }
             }
         }
     }
@@ -89,20 +125,22 @@ class MovieDetailViewController: UIViewController {
             self?.genres = dataGenres
             self?.ratings = data.ratings
             self?.genresCollectionView.reloadData()
+            
+            UIView.animate(withDuration: 0.5) {
+                self?.activityIndicator.alpha = 0
+                self?.titleLabel.alpha = 1
+                self?.releaseDateLabel.alpha = 1
+                self?.directorLabel.alpha = 1
+                self?.ratedLabel.alpha = 1
+                self?.castLabel.alpha = 1
+                self?.boxOfficeLabel.alpha = 1
+                self?.writersLabel.alpha = 1
+                self?.plotLabel.alpha = 1
+                self?.plotDetailLabel.alpha = 1
+                self?.genresCollectionView.alpha = 1
+            }
         }
     }
-    
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
 }
 
 extension MovieDetailViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
@@ -133,7 +171,7 @@ extension MovieDetailViewController: UICollectionViewDelegate, UICollectionViewD
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: 72, height: 96)
+        return CGSize(width: 84, height: 108)
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {

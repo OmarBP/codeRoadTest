@@ -64,7 +64,7 @@ class RatingView: UIView {
     override func prepareForInterfaceBuilder() {
         super.prepareForInterfaceBuilder()
         initView()
-        setProgress(42)
+        setProgress(0.42)
     }
     
     override func layoutSubviews() {
@@ -75,7 +75,6 @@ class RatingView: UIView {
         let startAngle = clockwise ? Double(-225).degToRad() : Double(45).degToRad()
         let endAngle = clockwise ? Double(45).degToRad() : Double(-225).degToRad()
         let radius = frame.width / 2.5
-        let arcCenter = progressLabel.center
         let path = UIBezierPath(arcCenter: center, radius: radius, startAngle: startAngle, endAngle: endAngle, clockwise: clockwise)
         setTrackLayer(path)
         layer.addSublayer(trackLayer)
@@ -97,6 +96,8 @@ class RatingView: UIView {
         let topAnchor = view.topAnchor.constraint(equalTo: topAnchor)
         let bottomAnchor = view.bottomAnchor.constraint(equalTo: bottomAnchor)
         NSLayoutConstraint.activate([leftAnchor, rightAnchor, topAnchor, bottomAnchor])
+        sourceLabel.textColor = .modalText
+        progressLabel.textColor = .modalText
     }
     
     fileprivate func setTrackLayer(_ path: UIBezierPath) {
@@ -115,17 +116,31 @@ class RatingView: UIView {
         shapeLayer.lineWidth = 4
     }
     
-    func setProgress(_ progress: Double) {
-        print("progress is \(progress)")
+    func setProgress(_ newProgress: Double) {
+        let progressToSet = min(max(0, newProgress), 1)
+        guard progressToSet != currentProgress else { return }
+        switch progressToSet {
+            case let x where x <= 0.33:
+                progressColor = .lowProgress
+                trackColor = .lowTrack
+            case let x where x >= 0.67:
+                progressColor = .progress
+                trackColor = .track
+            default:
+                progressColor = .midProgress
+                trackColor = .midTrack
+        }
+        trackLayer.strokeColor = currentTrackColor.cgColor
+        shapeLayer.strokeColor = currentProgressColor.cgColor
         let animation = CABasicAnimation(keyPath: "strokeEnd")
-        animation.fillMode = progress < currentProgress ? .backwards : .forwards
-        let progressToSet = min(max(0, progress), 1)
+        animation.fillMode = progressToSet < currentProgress ? .backwards : .forwards
         animation.fromValue = currentProgress
         animation.toValue = progressToSet
-        animation.duration = CFTimeInterval(progress)
+        animation.duration = CFTimeInterval(progress * 4)
         animation.isRemovedOnCompletion = false
+        animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
         shapeLayer.strokeEnd = progressToSet
         shapeLayer.add(animation, forKey: "progress")
-        self.progress = progress
+        progress = progressToSet
     }
 }
