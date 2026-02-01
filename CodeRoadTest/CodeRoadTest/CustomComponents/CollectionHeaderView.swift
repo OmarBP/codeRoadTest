@@ -7,6 +7,9 @@
 
 import UIKit
 
+/**
+ Custom view that works as a simple header for a section in an collection view
+ */
 class CollectionHeaderView: UICollectionReusableView {
     @IBOutlet weak var headerTitleLabel: UILabel!
     

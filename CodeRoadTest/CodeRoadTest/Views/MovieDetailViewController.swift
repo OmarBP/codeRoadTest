@@ -7,6 +7,9 @@
 
 import UIKit
 
+/**
+ View designed to show all the relevant data about a movie or a serie
+ */
 class MovieDetailViewController: UIViewController, NetworkActivityView {
     var id: String!
     fileprivate let moviesService = MoviesService()
@@ -38,6 +41,7 @@ class MovieDetailViewController: UIViewController, NetworkActivityView {
         setUpPosterImage()
         plotLabel.text = "Plot"
         setUpCollectionView()
+        
         moviesService.getDetails(id: id) { [weak self] result in
             DispatchQueue.main.async {
                 self?.activityIndicator.stopAnimating()
@@ -55,6 +59,9 @@ class MovieDetailViewController: UIViewController, NetworkActivityView {
         }
     }
     
+    /**
+     Sets up some basic properties for the poster image
+     */
     fileprivate func setUpPosterImage() {
         posterImage.layer.cornerRadius = 16
         posterImage.clipsToBounds = true
@@ -63,6 +70,9 @@ class MovieDetailViewController: UIViewController, NetworkActivityView {
         posterImage.alpha = 0
     }
     
+    /**
+     Sets up some basic properties for all the labels in the view
+     */
     fileprivate func setUpLabels() {
         titleLabel.alpha = 0
         releaseDateLabel.alpha = 0
@@ -75,10 +85,14 @@ class MovieDetailViewController: UIViewController, NetworkActivityView {
         plotDetailLabel.alpha = 0
     }
     
+    /**
+     Sets up the properties for the collection view
+     */
     fileprivate func setUpCollectionView() {
         genresCollectionView.delegate = self
         genresCollectionView.dataSource = self
         genresCollectionView.backgroundColor = .clear
+        
         let flowLayout = CustomCollectionFlowLayout()
         flowLayout.unaffectedSections = [0]
         flowLayout.estimatedItemSize = UICollectionViewFlowLayout.automaticSize
@@ -86,6 +100,14 @@ class MovieDetailViewController: UIViewController, NetworkActivityView {
         genresCollectionView.alpha = 0
     }
     
+    /**
+     Load the poster images from a service if it exists
+     
+     - Parameters:
+        - posterURL: The url where the poster image  is located
+     
+     - Postcondition: If there is no data on the service, a default image will appear as the poster
+     */
     fileprivate func loadPoster(_ posterURL: String) {
         moviesService.getImage(imageURL: posterURL) { [weak self] result in
             DispatchQueue.main.async {
@@ -105,12 +127,19 @@ class MovieDetailViewController: UIViewController, NetworkActivityView {
         }
     }
     
+    /**
+     Sets all the relevant data to its correspondent UI element and perform an animation to load the data in the screen
+     
+     - Parameters:
+        - data: The data related to the movie or serie
+     */
     fileprivate func loadData(_ data: MovieDetailData) {
         DispatchQueue.main.async { [weak self] in
             self?.titleLabel.text = data.title
             self?.releaseDateLabel.text = data.released
             self?.directorLabel.text = "Directed by: \(data.director)"
             self?.ratedLabel.text = data.rated
+            
             if let boxOffice = data.boxOffice {
                 self?.boxOfficeLabel.text = "Box office: \(boxOffice)"
             } else if let seasons = data.totalSeasons {
@@ -118,9 +147,11 @@ class MovieDetailViewController: UIViewController, NetworkActivityView {
             } else {
                 self?.boxOfficeLabel.text = nil
             }
+            
             self?.castLabel.text = "Cast: \(data.actors)"
             self?.writersLabel.text = "Writers: \(data.writer)"
             self?.plotDetailLabel.text = data.plot
+            
             let dataGenres = data.genre.split(separator: ",").compactMap({ $0.trimmingCharacters(in: .whitespacesAndNewlines) })
             self?.genres = dataGenres
             self?.ratings = data.ratings

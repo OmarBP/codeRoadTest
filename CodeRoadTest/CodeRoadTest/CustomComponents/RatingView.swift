@@ -7,6 +7,9 @@
 
 import UIKit
 
+/**
+ Custom view that shows the rating of a movie or serie
+ */
 class RatingView: UIView {
     fileprivate var currentProgressColor = UIColor.green
     fileprivate var currentTrackColor = UIColor.darkGray
@@ -72,22 +75,28 @@ class RatingView: UIView {
         let viewHeight = superview?.bounds.height ?? 0
         let topSpacing = 0.5 * (viewHeight - sourceLabel.bounds.height)
         progressLabelTopSpacing.constant = topSpacing
+        
         let startAngle = clockwise ? Double(-225).degToRad() : Double(45).degToRad()
         let endAngle = clockwise ? Double(45).degToRad() : Double(-225).degToRad()
         let radius = frame.width / 2.5
         let path = UIBezierPath(arcCenter: center, radius: radius, startAngle: startAngle, endAngle: endAngle, clockwise: clockwise)
+        
         setTrackLayer(path)
         layer.addSublayer(trackLayer)
         setShapeLayer(path)
         layer.addSublayer(shapeLayer)
     }
     
+    /**
+     Generates all the custom layout not declared in the nib file
+     */
     fileprivate func initView() {
         subviews.forEach { subview in
             subview.removeFromSuperview()
         }
         let nib = UINib(nibName: "RatingView", bundle: nil)
         guard let view = nib.instantiate(withOwner: self, options: nil).first as? UIView else { return }
+        
         view.backgroundColor = .clear
         view.translatesAutoresizingMaskIntoConstraints = false
         addSubview(view)
@@ -96,10 +105,17 @@ class RatingView: UIView {
         let topAnchor = view.topAnchor.constraint(equalTo: topAnchor)
         let bottomAnchor = view.bottomAnchor.constraint(equalTo: bottomAnchor)
         NSLayoutConstraint.activate([leftAnchor, rightAnchor, topAnchor, bottomAnchor])
+        
         sourceLabel.textColor = .modalText
         progressLabel.textColor = .modalText
     }
     
+    /**
+     Generates a custom progress bar that works as the track for the progress bar
+     
+     - Parameters:
+        - path: The path that the progress bar will follow
+     */
     fileprivate func setTrackLayer(_ path: UIBezierPath) {
         trackLayer.path = path.cgPath
         trackLayer.strokeColor = currentTrackColor.cgColor
@@ -108,6 +124,12 @@ class RatingView: UIView {
         trackLayer.lineWidth = 4
     }
     
+    /**
+     Generates a custom progress bar that works as the animated progress bar
+     
+     - Parameters:
+        - path: The path that the progress bar will follow
+     */
     fileprivate func setShapeLayer(_ path: UIBezierPath) {
         shapeLayer.path = path.cgPath
         shapeLayer.strokeColor = currentProgressColor.cgColor
@@ -116,9 +138,16 @@ class RatingView: UIView {
         shapeLayer.lineWidth = 4
     }
     
+    /**
+     Sets the progress with an animation for the custom progress bar
+     
+     - Parameters:
+        - newProgress: The new value that will be shown
+     */
     func setProgress(_ newProgress: Double) {
         let progressToSet = min(max(0, newProgress), 1)
         guard progressToSet != currentProgress else { return }
+        
         switch progressToSet {
             case let x where x <= 0.33:
                 progressColor = .lowProgress
@@ -132,6 +161,7 @@ class RatingView: UIView {
         }
         trackLayer.strokeColor = currentTrackColor.cgColor
         shapeLayer.strokeColor = currentProgressColor.cgColor
+        
         let animation = CABasicAnimation(keyPath: "strokeEnd")
         animation.fillMode = progressToSet < currentProgress ? .backwards : .forwards
         animation.fromValue = currentProgress
@@ -139,6 +169,7 @@ class RatingView: UIView {
         animation.duration = CFTimeInterval(progress * 4)
         animation.isRemovedOnCompletion = false
         animation.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        
         shapeLayer.strokeEnd = progressToSet
         shapeLayer.add(animation, forKey: "progress")
         progress = progressToSet

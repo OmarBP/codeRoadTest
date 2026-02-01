@@ -5,6 +5,9 @@
 //  Created by Omar Barrera Peña on 30/01/26.
 //
 
+/**
+ Data model that contains the full data about a movie or serie
+ */
 struct MovieDetailData: Codable {
     let title: String
     let year: String

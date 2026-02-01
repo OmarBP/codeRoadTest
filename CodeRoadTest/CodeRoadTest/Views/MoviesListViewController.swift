@@ -7,6 +7,9 @@
 
 import UIKit
 
+/**
+ The main view of the app, where a list of movies or series will appear after a search
+ */
 class MoviesListViewController: UITableViewController, NetworkActivityView {
     fileprivate let moviesService = MoviesService()
     fileprivate var searchData: SearchData?
@@ -25,6 +28,9 @@ class MoviesListViewController: UITableViewController, NetworkActivityView {
         searchBar.delegate = self
     }
     
+    /**
+     Sets up a welcome message that will appear when the list is empty
+     */
     fileprivate func setUpWelcomeMessage() {
         welcomeLabel.center = view.center
         welcomeLabel.text = "Welcome to the OMDB App, here you can find all the data about your favorite movies"
@@ -35,6 +41,12 @@ class MoviesListViewController: UITableViewController, NetworkActivityView {
         tableView.tableFooterView = welcomeLabel
     }
     
+    /**
+     Loads a modal view showing all the details for the selected movie or serie
+     
+     - Parameters:
+        - movieID: the ID of the selected movie or serie
+     */
     fileprivate func showDetailFor(movieID: String) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         guard let movieDetailVC = storyboard.instantiateViewController(withIdentifier: "movieDetail") as? MovieDetailViewController else { return }
@@ -45,6 +57,12 @@ class MoviesListViewController: UITableViewController, NetworkActivityView {
         present(navigation, animated: true, completion: nil)
     }
     
+    /**
+     Refresh the list of items with an animation
+     
+     - Parameters:
+        - data: The new data that will appear on the list
+     */
     fileprivate func refreshData(_ data: SearchData) {
         DispatchQueue.main.async { [weak self] in
             self?.tableView.beginUpdates()
@@ -87,6 +105,7 @@ class MoviesListViewController: UITableViewController, NetworkActivityView {
         }
         cell.titleLabel.text = data.title
         cell.yearLabel.text = data.year
+        
         moviesService.getImage(imageURL: data.poster) { result in
             DispatchQueue.main.async {
                 switch result {
@@ -125,6 +144,7 @@ extension MoviesListViewController: UISearchBarDelegate {
         UIView.animate(withDuration: 0.5) { [weak self] in
             self?.activityIndicator.alpha = 1
         }
+        
         guard let title = searchBar.text else { return }
         moviesService.getList(title: title) { [weak self] result in
             DispatchQueue.main.async {

@@ -7,6 +7,9 @@
 
 import UIKit
 
+/**
+ Custom collection view cell that shows data about a rating for a movie or serie
+ */
 class RatingViewCell: UICollectionViewCell {
     @IBOutlet weak var ratingView: RatingView!
     

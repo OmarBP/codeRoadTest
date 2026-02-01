@@ -6,6 +6,11 @@
 //
 
 extension Double {
+    /**
+     Convert a number from **degrees** to **radians**
+     
+     - Returns: The value converted to **Radians**
+     */
     func degToRad() -> Double {
         return self * .pi / 180
     }
